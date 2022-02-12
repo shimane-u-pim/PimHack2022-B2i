@@ -15,6 +15,8 @@ void setup()
   mySoftwareSerial.begin(9600);  //SoftwareSerial
 
   pinMode(DIN_PIN, INPUT_PULLUP);
+  pinMode(4, INPUT_PULLUP);
+  pinMode(6, INPUT_PULLUP);
 
   Serial.println(F("DFRobot DFPlayer Mini Demo"));
   Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
@@ -28,17 +30,48 @@ void setup()
 
   myDFPlayer.volume(25);  //Set volume value. From 0 to 30
   //myDFPlayer.play(1);  //Play the first mp3
+  pinMode(A0,OUTPUT);
 }
 
+int flag=0;
 void loop()
 {
   //static unsigned long timer = millis();
 
-  if ( digitalRead( DIN_PIN ) == LOW )
+  if(flag == 0)
   {
-    Serial.println("trigger");
-    myDFPlayer.play(1);
-    delay(100);
+    if (digitalRead(4) == LOW){
+      // 単発
+      if ( digitalRead( DIN_PIN ) == LOW )
+      {
+        Serial.println("trigger");
+        digitalWrite(A0,HIGH);
+        myDFPlayer.play(1);
+        delay(1000);
+        flag = 1;
+      }
+    }
+    if (digitalRead(6) == LOW){
+      // 3点バースト
+      if ( digitalRead( DIN_PIN ) == LOW ){
+        for(int i = 1; i < 4; i++){
+          Serial.print("trigger");
+          Serial.println(i);
+          digitalWrite(A0,HIGH);
+          myDFPlayer.play(1);
+          delay(100);
+          digitalWrite(A0,LOW);
+          delay(100);
+        }
+      flag = 1;
+      }    
+    }
+  }
+  
+  if ( digitalRead( DIN_PIN ) == HIGH )
+  {
+    digitalWrite(A0,LOW);
+    flag = 0;
   }
     /*
     else
